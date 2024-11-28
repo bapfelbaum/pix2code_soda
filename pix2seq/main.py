@@ -156,7 +156,7 @@ def get_args_parser():
 
 def get_free_gpu (min_memory_mb=20480): #TODO added dynamic gpu fetching logic, looks for gpu with 20gig 
     free_gpus=[]
-    for i in range(torch.cude.device_count()):
+    for i in range(torch.cuda.device_count()):
         stats = torch.cuda.memory_stats(i)
         free_mem = stats.get("active.all.current", 0)
         if free_mem / (1024*1024) >= min_memory_mb:
