@@ -62,7 +62,7 @@ def get_args_parser():
     # * Backbone
     parser.add_argument(
         "--backbone",
-        default="resnet50",
+        default="resnet18",
         type=str,
         help="Name of the convolutional backbone to use",
     )
@@ -154,6 +154,16 @@ def get_args_parser():
     )
     return parser
 
+def dynamically_get_free_gpu (min_memory_mb=20480): #TODO added dynamic gpu fetching logic, looks for gpu with 20gig 
+    free_gpus=[]
+    for i in range(torch.cude.device_count()):
+        stats = torch.cuda.memory_stats(i)
+        free_mem = stats.get("active.all.current", 0)
+        if free_mem / (1024*1024) >= min_memory_mb:
+            free_gpus.append(i)
+    if not free_gpus:
+        raise RuntimeError("Currently no GPU with enough free memory available, consider using another device or using multiple gpus!")
+    return free_gpus[0]
 
 def main(args, rtpt=None):
     utils.init_distributed_mode(args)
@@ -384,6 +394,11 @@ def main(args, rtpt=None):
                             coco_evaluator.coco_eval["bbox"].eval,
                             output_dir / "eval" / name,
                         )
+        import gc                
+        gc.collect() #test added
+        torch.cuda.empty_cache() #test added
+    
+
 
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
@@ -409,15 +424,24 @@ if __name__ == "__main__":
     args.rand_target = True
 
     args.dataset_file = "clevr"
-    args.coco_path = "data/pattern_free_clevr"
+    args.coco_path = "soda/"
 
-    args.output_dir = "pix2seq/train_results/pix2seq_clevr"
-    args.resume = "pix2seq/train_results/checkpoint_e299_ap370.pth"
+    args.output_dir = "soda/output/"
+    #args.resume = "pix2seq/train_results/checkpoint_e299_ap370.pth"
 
     args.lr = 3e-4
     args.lr_backbone = 3e-5
     args.epochs = 50
-    args.batch_size = 8
+    args.batch_size = 4
     args.num_workers = 0
 
+    #added block to look for proper gpu
+    try: 
+        gpu_id = get_free_gpu()
+        device = torch.device(f"cuda:{gpu_id}")
+        print(f"Using GPU {gpu_id} with likely sufficient memory.")
+    except RuntimeError as e:
+        print(e)
+        device = torch.device("cuda")
+        print("Falling back to default cuda, will probably crash due to lack of memory")
     main(args, rtpt)
