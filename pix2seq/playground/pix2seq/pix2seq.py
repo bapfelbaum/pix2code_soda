@@ -81,7 +81,7 @@ class Pix2Seq(nn.Module):
         out_seq = self.transformer(src, -1, mask, pos)
         return out_seq
 
-    def build_input_seq(self, targets, max_objects=100):
+    def build_input_seq(self, targets, max_objects=200):
         device = targets[0]["labels"].device
         input_seq_list = []
         for b_i, target in enumerate(targets):
@@ -177,7 +177,7 @@ class SetCriterion(nn.Module):
         self.register_buffer("empty_weight", empty_weight)
         self.weight_dict = weight_dict
 
-    def build_target_seq(self, targets, max_objects=100):
+    def build_target_seq(self, targets, max_objects=200):
         device = targets[0]["labels"].device
         target_seq_list = []
         for target in targets:
@@ -364,6 +364,7 @@ class PostProcess(nn.Module):
                 results.append(dict())
                 continue
             num_objects = seq_len // 5
+        
 
             # scaling needed for boxes to meet instances.json. Not needed for classes 2002 etc.
             # test_seq = test_seq * scale_fct[b_i]
