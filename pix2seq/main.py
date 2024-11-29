@@ -432,7 +432,7 @@ if __name__ == "__main__":
     args.lr = 3e-4
     args.lr_backbone = 3e-5
     args.epochs = 50
-    args.batch_size = 4
+    args.batch_size = 8
     args.num_workers = 0
 
     #added block to look for proper gpu
