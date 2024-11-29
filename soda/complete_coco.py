@@ -11,3 +11,5 @@ for annotations in data['annotations']:
     if 'segmentation' not in annotation:
         annotation['segmentation'] = [] #default value
 #
+with open('instances.json','w') as f:
+    json.dump(data, f)
