@@ -21,4 +21,6 @@ def build_dataset(image_set, args):
         return build_coco(image_set, args)
     elif args.dataset_file == 'clevr':
         return build_clevr(image_set, args)
+    elif args.dataset_file == 'soda':
+        return build_soda(image_set, args)
     raise ValueError(f'dataset {args.dataset_file} not supported')
