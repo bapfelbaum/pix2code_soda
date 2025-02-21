@@ -180,7 +180,7 @@ def main(args, rtpt=None):
     model, criterion, postprocessors = build_all_model[args.model](args)
     model.to(device)
 
-    model_without_ddp = model
+    model_without_ddp = torch.nn.DataParallel(model) #test changed from model
     if args.distributed:
         model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
         model_without_ddp = model.module
@@ -323,6 +323,20 @@ def main(args, rtpt=None):
             amp_train=args.amp_train,
             rand_target=args.rand_target,
         )
+        print(f"Scheduler State: {lr_scheduler.state_dict()}") #debug added might need to update lr scheduler
+        print(f"last Epoch: {lr_scheduler.last_epoch}") #end debug
+        print(f"End epoch: {lr_scheduler.end_epoch}") #debug
+        if epoch == 50: 
+            lr_scheduler = utils.WarmupLinearDecayLR(
+                optimizer,
+                warmup_factor=0.01,
+                warmup_iters=10,
+                warmup_method="linear",
+                end_epoch=args.epochs,
+                final_lr_factor=0.01,
+            ) #remove me
+
+
         lr_scheduler.step()
         rtpt.step()
 
@@ -407,7 +421,7 @@ def main(args, rtpt=None):
 
 if __name__ == "__main__":
     # Create RTPT object
-    rtpt = RTPT(name_initials="XX", experiment_name="Pix2Seq", max_iterations=50)
+    rtpt = RTPT(name_initials="XX", experiment_name="Pix2Seq", max_iterations=150) #changed to 150
 
     # Start the RTPT tracking
     rtpt.start()
@@ -423,7 +437,7 @@ if __name__ == "__main__":
     args.large_scale_jitter = True
     args.rand_target = True
 
-    args.dataset_file = "clevr"
+    args.dataset_file = "soda"
     args.coco_path = "soda/"
 
     args.output_dir = "soda/output/"
@@ -431,9 +445,9 @@ if __name__ == "__main__":
 
     args.lr = 3e-4
     args.lr_backbone = 3e-5
-    args.epochs = 50
+    args.epochs = 150
     args.batch_size = 4
-    args.num_workers = 2
+    args.num_workers = 8
 
     #added block to look for proper gpu
     try: 

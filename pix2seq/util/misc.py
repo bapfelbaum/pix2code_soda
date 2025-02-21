@@ -569,6 +569,7 @@ class WarmupLinearDecayLR(_LRScheduler):
 
 def _get_lr_linear_decay_factor_at_iter(iter: int, start_epoch: int, end_epoch: int,
                                         final_lr_factor: float):
+    print("iterations", iter, end_epoch)
     assert iter <= end_epoch
     if iter <= start_epoch:
         return 1.0
