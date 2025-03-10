@@ -5,7 +5,7 @@ import numpy as np
 from rtpt.rtpt import RTPT
 
 from dreamcoder.domains.list.listPrimitives import bootstrapTarget
-from dreamcoder.domains.clevr.parse_clevr_tasks import parse_relation_tasks
+from dreamcoder.domains.soda.parse_soda_tasks import parse_relation_tasks
 from dreamcoder.domains.relation.relation_primitives import get_clevr_primitives
 
 from dreamcoder.domains.text.main import (
