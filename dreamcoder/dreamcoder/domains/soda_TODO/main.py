@@ -65,10 +65,10 @@ def main(args, eval=False):
     baseGrammar = Grammar.uniform(get_clevr_primitives())
 
     # Parse tasks
-    all_train = parse_relation_tasks(path=f"data/soda/{split}/train") #TODo
-    print("Number of train tasks:", len(all_train))
+    train = parse_relation_tasks(path=f"data/soda/train") #TODo
+    print("Number of train tasks:", len(train))
     # shuffle tasks
-    random.shuffle(all_train)
+    random.shuffle(train)
     test = parse_relation_tasks(path="data/soda_eval")
 
     eprint("Split tasks into %d/%d test/train" % (len(test), len(train)))
@@ -82,7 +82,7 @@ def main(args, eval=False):
     # Create RTPT object
     rtpt = RTPT(
         name_initials="XX",
-        experiment_name=f"DreamCoder_{split}_{seed}",
+        experiment_name=f"DreamCoder_{seed}",
         max_iterations=100,
     )
     # Start the RTPT tracking
