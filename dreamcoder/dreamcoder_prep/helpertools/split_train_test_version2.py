@@ -2,7 +2,7 @@ import json
 import os
 import random
 
-def sample_json_entries(input_file, output_file, sample_size):
+def sample_json_entries(input_file, output_file, sample_size, min_annotations=2, max_annotations=20):
     # Load the JSON data from the input file
     with open(input_file, 'r') as f:
         data = json.load(f)
@@ -23,8 +23,16 @@ def sample_json_entries(input_file, output_file, sample_size):
             annotation_map[image_id] = []
         annotation_map[image_id].append(annotation)
 
+    # Filter images based on the number of annotations
+    valid_images = []
+    for image in images:
+        image_id = image.get('id')
+        num_annotations = len(annotation_map.get(image_id, []))
+        if min_annotations <= num_annotations <= max_annotations:
+            valid_images.append(image)
+
     # Sample random images
-    sampled_images = random.sample(images, min(sample_size, len(images)))
+    sampled_images = random.sample(valid_images, min(sample_size, len(valid_images)))
 
     # Prepare the output structure
     output_data = {
@@ -113,4 +121,6 @@ def split_json(input_file, split_type, split_size):
 input = "train.json"
 output = "sampled_annotations.json"
 samplesize = 500
-sample_json_entries(input,output,samplesize)
+min_ann = 2
+max_ann = 20
+sample_json_entries(input,output,samplesize, min_ann, max_ann)
