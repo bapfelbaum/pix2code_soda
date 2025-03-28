@@ -41,9 +41,9 @@ def filter_relations(image_data, relation_type=None, obj_type1=None, obj_type2=N
                     continue
 
         else: #not a group
-            if obj_type1 and object_categories.get(str(obj1_id)) != obj_type1 and obj_type1 != "*": #added wildcard
+            if obj_type1 and object_categories.get(str(obj_id1)) != obj_type1 and obj_type1 != "*": #added wildcard
                 continue
-            if obj_type2 and object_categories.get(str(obj2_id)) != obj_type2 and obj_type2 != "*": #added wildcard
+            if obj_type2 and object_categories.get(str(obj_id2)) != obj_type2 and obj_type2 != "*": #added wildcard
                 continue
 
         matching_relations.append(relation)
