@@ -1,4 +1,5 @@
 import json
+import sys
 from scipy.spatial.distance import euclidean
 from itertools import combinations
 
@@ -176,5 +177,19 @@ def process_annotations(file_path):
 # Example usage
 #json_output = process_annotations("annotations.json")
 # print(json_output)
-print(process_annotations("annotations.json"))
+#print(process_annotations("annotations.json"))
 
+def main():
+    """Parse command-line arguments and execute the query."""
+    annotation_path = "annotations.json"  # Default file
+    
+    if len(sys.argv) > 1 and not sys.argv[1].isdigit() and sys.argv[1] != "*":
+        annotation_path = sys.argv[1]
+        args = sys.argv[2:]
+    else:
+        args = sys.argv[1:]
+    
+    print(process_annotations(annotation_path))
+
+if __name__ == "__main__":
+    main()
