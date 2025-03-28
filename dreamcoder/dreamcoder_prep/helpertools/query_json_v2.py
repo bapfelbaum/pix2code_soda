@@ -15,7 +15,11 @@ def filter_relations(image_data, relation_type=None, obj_type1=None, obj_type2=N
         if len(relation) < 3:  # Skip malformed relations
             continue
         
-        rel_type, obj1_id, obj2_id = relation[:3]  # Unpack relation structure
+        rel_type = relation[0]  # Unpack relation type
+        rel_objects = relation[1:] #unpack relation objects
+
+        #TODO legacy code can be done better
+        obj_id1, obj_id2 = rel_objects[0:2] #first two elements
 
         if relation_type and rel_type != relation_type and relation_type != "*": #added wildcard
             continue
@@ -23,11 +27,24 @@ def filter_relations(image_data, relation_type=None, obj_type1=None, obj_type2=N
         obj_type1 = int(obj_type1) if obj_type1 is not None else None
         obj_type2 = int(obj_type2) if obj_type2 is not None else None
 
-        if obj_type1 and object_categories.get(str(obj1_id)) != obj_type1 and obj_type1 != "*": #added wildcard
-            continue
-        
-        if obj_type2 and object_categories.get(str(obj2_id)) != obj_type2 and obj_type2 != "*": #added wildcard
-            continue
+        if(relation_type == 'grouped'):
+            #search groups
+            object_ids = relations[1:]
+            objects = [object_categories.get(id, None) for id in object_ids]
+            if (obj_type1 != "*" and obj_type1 == obj_type2): #matching ids
+                if (Counter(objects)[obj_type1] < 2): #less than twice so no match
+                    continue
+            else:#two different types, we want at least one wildcard with a match or two wildcards
+                if (obj_type1 != "*" and obj_type1 not in objects): 
+                    continue
+                if (obj_type2 != "*" and obj_type2 not in objects):
+                    continue
+
+        else: #not a group
+            if obj_type1 and object_categories.get(str(obj1_id)) != obj_type1 and obj_type1 != "*": #added wildcard
+                continue
+            if obj_type2 and object_categories.get(str(obj2_id)) != obj_type2 and obj_type2 != "*": #added wildcard
+                continue
 
         matching_relations.append(relation)
 
@@ -41,7 +58,7 @@ def query_json(json_data, image_id=None, relation_type=None, obj_type1=None, obj
     
     for image in json_data:
         if image_id and image_id != "*" and str(image['image_id']) != image_id:
-            print("Test filter", image_id)
+            #print("Test filter", image_id)
             continue
         filtered_relations = filter_relations(image, relation_type, obj_type1, obj_type2)
         if filtered_relations:
@@ -120,7 +137,7 @@ def main():
     
     json_data = load_json(file_path)
     filter_list = query_json(json_data, image_id, relation_type, obj_type1, obj_type2)
-    newname = 'filtered_by_' + relation_type
+    newname = 'filtered_by_' + relation_type + "-" + obj_type1 + "-" + obj_type2
 
     #Custom dataset splits:
     filter_annotations('annotations.json', newname, filter_list, filter_type='positive', max_annotations=20)
