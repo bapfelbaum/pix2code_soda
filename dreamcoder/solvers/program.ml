@@ -859,6 +859,59 @@ let primitive_zip = primitive "zip" (tlist t0 @> tlist t1 @> (t0 @> t1 @> t2) @>
 let primitive_fold = primitive "fold" (tlist t0 @> t1 @> (t0 @> t1 @> t1) @> t1)
     (fun l x0 f -> List.fold_right ~f:f ~init:x0 l);;
 
+(*TODO Added new DC primitives for guiding traffic scene reasoning*)
+(* Define the type for a sample *)
+type sample = int list
+
+(* Function to filter samples by label *)
+let filter_samples_by_label (samples : sample list) (desired_label : int) : sample list =
+  List.filter (fun sample ->
+    match sample with
+    (* Check label per sample *)
+    | [_; _; _; _; label] -> label = desired_label 
+    (* Catch missmatched samples *)
+    | _ -> false 
+  ) samples
+
+let get_bounding_box (samp : sample) : int list =
+  match samp with
+  | x1 :: x2 :: x3 :: x4 :: _ -> [x1; x2; x3; x4]
+  | _ -> failwith "Sample must have 5 elements"
+
+(* probably not neeeded because list nth *)
+let get_label (samp : sample) : int = 
+  match samp with
+  | _ :: _ :: _ :: _ :: x5 -> x5
+  | _ -> failwith "Sample must have 5 elements" 
+
+let calculate_area (coords : int list) : int =
+  match coords with
+  | [xmin; ymin; xmax; ymax] ->
+    let width = xmax - xmin in
+    let height = ymax - ymin in
+    width * height
+  | _ -> failwith "Coordinates must be a list of 4 integers"
+
+let count_label (samples : sample list) (label : int) : int =
+  List.fold_left (fun count sample ->
+    if List.nth sample 4 = label then count + 1 else count
+  ) 0 samples
+
+let calculate_center (coords : int list) : (int * int) =
+  match coords with
+  | [xmin; ymin; xmax; ymax] ->
+    ((xmin + xmax) / 2, (ymin + ymax) / 2)
+  | _ -> failwith "Coordinates must be a list of 4 integers"
+
+let calculate_distance (sample1 : sample) (sample2 : sample) : int =
+  let centerpoint1 = calculate_centerpoint (get_bbox sample1) in
+  let centerpoint2 = calculate_centerpoint (get_bbox sample2) in
+  let dx = abs (fst centerpoint1 - fst centerpoint2) in
+  let dy = abs (snd centerpoint1 - snd centerpoint2) in
+  max dx dy
+
+(*END TODO*)
+
 
 let default_recursion_limit = ref 50;;
 let set_recursion_limit l = default_recursion_limit := l;;
