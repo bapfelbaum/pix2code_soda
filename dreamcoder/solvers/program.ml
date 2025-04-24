@@ -860,28 +860,39 @@ let primitive_fold = primitive "fold" (tlist t0 @> t1 @> (t0 @> t1 @> t1) @> t1)
     (fun l x0 f -> List.fold_right ~f:f ~init:x0 l);;
 
 (*TODO Added new DC primitives for guiding traffic scene reasoning*)
+(* need to add primitive definition*)
+(* let primitive_min = primitive "min" (tint @> tint @> tint) (fun (x: int) (y: int) -> min x y);; *) 
+
 (* Define the type for a sample *)
 type sample = int list
 
 (* Function to filter samples by label *)
 let filter_samples_by_label (samples : sample list) (desired_label : int) : sample list =
-  List.filter (fun sample ->
+  List.filter ~f:(fun sample ->
+    
     match sample with
     (* Check label per sample *)
-    | [_; _; _; _; label] -> label = desired_label 
+    | _ :: _ :: _ :: _ :: [label] -> label = desired_label 
     (* Catch missmatched samples *)
     | _ -> false 
-  ) samples
 
-let get_bounding_box (samp : sample) : int list =
+    (*try*)
+     (* List.nth sample 4 = desired_label*)
+    (*with*)
+    (*| Failure _ -> false*)
+  ) samples
+let primitive_filter_samples_by_label = primitive "filter_samples_by_label" (tlist (tlist tint) @> tint @> tlist (tlist tint)) (fun samples desired_label -> filter_samples_by_label samples desired_label);;
+
+let get_bbox (samp : int list) : int list =
   match samp with
   | x1 :: x2 :: x3 :: x4 :: _ -> [x1; x2; x3; x4]
-  | _ -> failwith "Sample must have 5 elements"
+  | _ -> failwith "Sample must have at least 4 elements"
+let primitive_get_bbox = primitive "get_bbox" (tlist tint @> tlist tint) (fun sample -> get_bbox sample);;
 
 (* probably not neeeded because list nth *)
 let get_label (samp : sample) : int = 
   match samp with
-  | _ :: _ :: _ :: _ :: x5 -> x5
+  | _ :: _ :: _ :: _ :: [x5] -> x5
   | _ -> failwith "Sample must have 5 elements" 
 
 let calculate_area (coords : int list) : int =
@@ -892,11 +903,6 @@ let calculate_area (coords : int list) : int =
     width * height
   | _ -> failwith "Coordinates must be a list of 4 integers"
 
-let count_label (samples : sample list) (label : int) : int =
-  List.fold_left (fun count sample ->
-    if List.nth sample 4 = label then count + 1 else count
-  ) 0 samples
-
 let calculate_center (coords : int list) : (int * int) =
   match coords with
   | [xmin; ymin; xmax; ymax] ->
@@ -904,8 +910,8 @@ let calculate_center (coords : int list) : (int * int) =
   | _ -> failwith "Coordinates must be a list of 4 integers"
 
 let calculate_distance (sample1 : sample) (sample2 : sample) : int =
-  let centerpoint1 = calculate_centerpoint (get_bbox sample1) in
-  let centerpoint2 = calculate_centerpoint (get_bbox sample2) in
+  let centerpoint1 = calculate_center (get_bbox sample1) in
+  let centerpoint2 = calculate_center (get_bbox sample2) in
   let dx = abs (fst centerpoint1 - fst centerpoint2) in
   let dy = abs (snd centerpoint1 - snd centerpoint2) in
   max dx dy
