@@ -127,6 +127,25 @@ def _exists(pred):
 def _get_attribute(l):
     return lambda i: l[i]
 
+#expects a list of at least 4 rn
+def _get_bbox(sample):
+    if len(sample) >= 5:
+        return sample[:4]
+    else:
+        return None
+    
+def _filter_samples_by_label(samples, label):
+    """
+    Filter a list of samples based on a given label.
+
+    Args:
+        samples (list): A list of samples, where each sample is a list of integers.
+        label (int): The label to filter by.
+
+    Returns:
+        list: A list of samples that have the correct label at their 5th position.
+    """
+    return [sample for sample in samples if len(sample) > 4 and sample[4] == label]
 
 def get_primitives():
     primitives = [
@@ -300,4 +319,43 @@ def get_clevr_primitives_unconfounded(confounded=True):
             Primitive(str(j), tint, j)
             for j in [0, 1, 2, 3, 4, 6, 7, 8, 10, 11, 12, 13, 14]
         ]
+    return primitives
+
+def get_soda_primitives():
+    primitives = [
+        Primitive("true", tbool, True),
+        Primitive("not", arrow(tbool, tbool), _not),
+        Primitive("and", arrow(tbool, tbool, tbool), _and),
+        Primitive("or", arrow(tbool, tbool, tbool), _or),
+        Primitive("eq?", arrow(tint, tint, tbool), _eq),
+        Primitive("gt?", arrow(tint, tint, tbool), _gt),
+        Primitive("find", arrow(t0, tlist(t0), tint), _find),
+        Primitive("max", arrow(tint, tint, tint), _max),
+        Primitive("min", arrow(tint, tint, tint), _min),
+        Primitive("map", arrow(arrow(t0, t1), tlist(t0), tlist(t1)), _map),
+        # Primitive("range", arrow(tint, tlist(tint)), _range),
+        Primitive("index", arrow(tint, tlist(t0), t0), _index),
+        Primitive("fold", arrow(tlist(t0), t1, arrow(t0, t1, t1), t1), _fold),
+        Primitive("length", arrow(tlist(t0), tint), len),
+        Primitive("if", arrow(tbool, t0, t0, t0), _if),
+        Primitive("+", arrow(tint, tint, tint), _addition),
+        Primitive("-", arrow(tint, tint, tint), _subtraction),
+        Primitive("empty", tlist(t0), []),
+        Primitive("cons", arrow(t0, tlist(t0), tlist(t0)), _cons),
+        Primitive("car", arrow(tlist(t0), t0), _car),
+        Primitive("cdr", arrow(tlist(t0), tlist(t0)), _cdr),
+        Primitive("empty?", arrow(tlist(t0), tbool), _isEmpty),
+        Primitive("forall", arrow(arrow(t0, tbool), tlist(t0), tbool), _forall),
+        Primitive("exists", arrow(arrow(t0, tbool), tlist(t0), tbool), _exists),
+        Primitive("count", arrow(tlist(t0), t0, tint), _count),
+        #restrict new functions to int
+        Primitive("get_bbox", arrow(tlist(tint), tlist(tint)), _get_bbox),
+        Primitive("filter_samples_by_label", arrow(tlist(tlist(tint)), tint, tlist(tlist(tint))), _filter_samples_by_label),
+
+    ]
+
+    # base primitives
+    primitives = primitives + [Primitive(str(j), tint, j) for j in range(10)]
+    # primitives = primitives + [Primitive(str(j), tint, j) for j in [0,1,3,4,5,6,7,8,9,10,11,12,13,14]] #
+
     return primitives
