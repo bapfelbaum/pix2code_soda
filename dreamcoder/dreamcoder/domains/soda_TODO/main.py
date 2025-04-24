@@ -7,6 +7,7 @@ from rtpt.rtpt import RTPT
 from dreamcoder.domains.list.listPrimitives import bootstrapTarget
 from dreamcoder.domains.soda.parse_soda_tasks import parse_relation_tasks
 from dreamcoder.domains.relation.relation_primitives import get_clevr_primitives
+from dreamcoder.domains.relation.relation_primitives import get_soda_primitives
 
 from dreamcoder.domains.text.main import (
     ConstantInstantiateVisitor,
@@ -62,7 +63,7 @@ def main(args, eval=False):
             args.update({"resume": f"{outdir}{most_recent_file}"})
 
     # Create grammar
-    baseGrammar = Grammar.uniform(get_clevr_primitives())
+    baseGrammar = Grammar.uniform(get_soda_primitives())
 
     # Parse tasks
     train = parse_relation_tasks(path=f"data/soda/train") #TODo
