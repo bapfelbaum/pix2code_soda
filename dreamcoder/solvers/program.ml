@@ -883,6 +883,19 @@ let filter_samples_by_label (samples : sample list) (desired_label : int) : samp
   ) samples
 let primitive_filter_samples_by_label = primitive "filter_samples_by_label" (tlist (tlist tint) @> tint @> tlist (tlist tint)) (fun samples desired_label -> filter_samples_by_label samples desired_label);;
 
+(* Function to filter samples based on a predicate *)
+let filter_by_predicate (predicate : sample -> bool) (samples : sample list) : sample list =
+  List.filter predicate samples
+
+(*let primitive_filter_by_predicate = primitive "filter_by_predicate" ((tlist int) @> bool) (tlist (tlist tint)) @> (tlist(tlist int)) (fun predicate samples -> filter_by_predicate predicate samples)*)
+
+let primitive_filter_by_predicate = 
+  primitive "filter_by_predicate" 
+    (sample @> bool)  (* Assuming sample is a correctly defined type *)
+    @> (tlist (tlist tint)) 
+    @> (tlist (tlist int)) 
+    (fun predicate samples -> filter_by_predicate predicate samples);;
+
 let get_bbox (samp : int list) : int list =
   match samp with
   | x1 :: x2 :: x3 :: x4 :: _ -> [x1; x2; x3; x4]
@@ -894,6 +907,8 @@ let get_label (samp : sample) : int =
   match samp with
   | _ :: _ :: _ :: _ :: [x5] -> x5
   | _ -> failwith "Sample must have 5 elements" 
+let primitive_get_label = primitive "get_label" (tlist tint @> tint) (fun sample -> get_label sample);;
+
 
 let calculate_area (coords : int list) : int =
   match coords with
@@ -908,13 +923,17 @@ let calculate_center (coords : int list) : (int * int) =
   | [xmin; ymin; xmax; ymax] ->
     ((xmin + xmax) / 2, (ymin + ymax) / 2)
   | _ -> failwith "Coordinates must be a list of 4 integers"
+let primitive_calculate_center = primitive "calculate_center" (tlist tint) @> (tint * tint) (fun sample -> calculate_center int list);;
 
+(* needs work *)
 let calculate_distance (sample1 : sample) (sample2 : sample) : int =
   let centerpoint1 = calculate_center (get_bbox sample1) in
   let centerpoint2 = calculate_center (get_bbox sample2) in
   let dx = abs (fst centerpoint1 - fst centerpoint2) in
   let dy = abs (snd centerpoint1 - snd centerpoint2) in
   max dx dy
+(*let primitive_calculate_distance = primitive "calculate_distance" (tlist tint) @> (tlist tint) @> tint (fun sample -> get_label sample);;*)
+
 
 (*END TODO*)
 
