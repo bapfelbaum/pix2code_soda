@@ -13,7 +13,7 @@ from dreamcoder.domains.list.listPrimitives import (
     _unfold,
     bootstrapTarget,
 )
-from dreamcoder.domains.relation.make_relation_tasks import make_relation_tasks
+#from dreamcoder.domains.relation.make_relation_tasks import make_relation_tasks
 from dreamcoder.domains.text.main import (
     ConstantInstantiateVisitor,
     LearnedFeatureExtractor,
@@ -146,6 +146,35 @@ def _filter_samples_by_label(samples, label):
         list: A list of samples that have the correct label at their 5th position.
     """
     return [sample for sample in samples if len(sample) > 4 and sample[4] == label]
+#todo
+def _filter_by_predicate(predicate, samples):
+    """
+    Filter a list of samples based on a given predicate.
+
+    Args:
+        samples (list): A list of samples, where each sample is a list of integers.
+        predicate: The boolean function to filter by.
+
+    Returns:
+        list: A list of samples that satisfy predicate
+    """
+    return list(filter(predicate, samples))
+
+#expects a list of at least 4 rn
+def _get_label(sample):
+    if len(sample) >= 5:
+        return sample[4]
+    else:
+        return None
+    
+def _calculate_center(coords):
+    if len(coords) != 4:
+        raise ValueError("Coordinates must be a list of 4 integers")
+    
+    xmin, ymin, xmax, ymax = coords
+    center_x = (xmin + xmax) // 2
+    center_y = (ymin + ymax) // 2
+    return (center_x, center_y)
 
 def get_primitives():
     primitives = [
@@ -351,7 +380,9 @@ def get_soda_primitives():
         #restrict new functions to int
         Primitive("get_bbox", arrow(tlist(tint), tlist(tint)), _get_bbox),
         Primitive("filter_samples_by_label", arrow(tlist(tlist(tint)), tint, tlist(tlist(tint))), _filter_samples_by_label),
-
+        Primitive("filter_by_predicate", arrow(arrow(tlist(tint), tbool),(tlist (tlist (tint))), tlist(tlist(tint))), _filter_by_predicate),
+        Primitive("calculate_center", arrow(tlist(tint), (tint * tint)), _calculate_center),
+        Primitive("get_label", arrow(tlist(tint),tint), _get_label)
     ]
 
     # base primitives
