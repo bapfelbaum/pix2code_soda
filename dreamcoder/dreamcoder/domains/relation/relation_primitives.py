@@ -175,6 +175,24 @@ def _calculate_center(coords):
     center_x = (xmin + xmax) // 2
     center_y = (ymin + ymax) // 2
     return (center_x, center_y)
+def _contains_2_above_4(samples):
+    boxes2 = []  # List to hold all boxes with label 2
+    boxes4 = []  # List to hold all boxes with label 4
+
+    # Collect all relevant boxes
+    for box in samples:
+        if box[4] == 2:
+            boxes2.append(box)
+        elif box[4] == 4:
+            boxes4.append(box)
+
+    # Check if any box with label 2 is above any box with label 4
+    for box2 in boxes2:
+        for box4 in boxes4:
+            if box2[3] < box4[1]:  # box2's bottom edge is above box4's top edge
+                return True
+
+    return False
 
 def get_primitives():
     primitives = [
@@ -381,8 +399,10 @@ def get_soda_primitives():
         Primitive("get_bbox", arrow(tlist(tint), tlist(tint)), _get_bbox),
         Primitive("filter_samples_by_label", arrow(tlist(tlist(tint)), tint, tlist(tlist(tint))), _filter_samples_by_label),
         Primitive("filter_by_predicate", arrow(arrow(tlist(tint), tbool),(tlist (tlist (tint))), tlist(tlist(tint))), _filter_by_predicate),
-        Primitive("calculate_center", arrow(tlist(tint), (tint * tint)), _calculate_center),
-        Primitive("get_label", arrow(tlist(tint),tint), _get_label)
+        #Primitive("calculate_center", arrow(tlist(tint), (tint * tint)), _calculate_center),
+        Primitive("get_label", arrow(tlist(tint),tint), _get_label),
+        #Check whether DC can use handcrafted solution
+        Primitive("contains_2_above_4", arrow(tlist(tlist(tint)), tbool),_contains_2_above_4)
     ]
 
     # base primitives

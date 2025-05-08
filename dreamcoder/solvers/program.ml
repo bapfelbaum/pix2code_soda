@@ -868,33 +868,21 @@ type sample = int list
 
 (* Function to filter samples by label *)
 let filter_samples_by_label (samples : sample list) (desired_label : int) : sample list =
-  List.filter ~f:(fun sample ->
-    
+  List.filter ~f:(fun sample ->   
     match sample with
     (* Check label per sample *)
     | _ :: _ :: _ :: _ :: [label] -> label = desired_label 
     (* Catch missmatched samples *)
     | _ -> false 
 
-    (*try*)
-     (* List.nth sample 4 = desired_label*)
-    (*with*)
-    (*| Failure _ -> false*)
   ) samples
 let primitive_filter_samples_by_label = primitive "filter_samples_by_label" (tlist (tlist tint) @> tint @> tlist (tlist tint)) (fun samples desired_label -> filter_samples_by_label samples desired_label);;
 
 (* Function to filter samples based on a predicate *)
 let filter_by_predicate (predicate : sample -> bool) (samples : sample list) : sample list =
-  List.filter predicate samples
+  List.filter ~f:predicate samples
 
-(*let primitive_filter_by_predicate = primitive "filter_by_predicate" ((tlist int) @> bool) (tlist (tlist tint)) @> (tlist(tlist int)) (fun predicate samples -> filter_by_predicate predicate samples)*)
-
-let primitive_filter_by_predicate = 
-  primitive "filter_by_predicate" 
-    (sample @> bool)  (* Assuming sample is a correctly defined type *)
-    @> (tlist (tlist tint)) 
-    @> (tlist (tlist int)) 
-    (fun predicate samples -> filter_by_predicate predicate samples);;
+let primitive_filter_by_predicate = primitive "filter_by_predicate" ((tlist tint @> tboolean) @> (tlist (tlist tint)) @> (tlist (tlist tint))) (fun predicate samples -> filter_by_predicate predicate samples);;
 
 let get_bbox (samp : int list) : int list =
   match samp with
@@ -923,7 +911,8 @@ let calculate_center (coords : int list) : (int * int) =
   | [xmin; ymin; xmax; ymax] ->
     ((xmin + xmax) / 2, (ymin + ymax) / 2)
   | _ -> failwith "Coordinates must be a list of 4 integers"
-let primitive_calculate_center = primitive "calculate_center" (tlist tint) @> (tint * tint) (fun sample -> calculate_center int list);;
+(*let primitive_calculate_center = primitive "calculate_center" ((tlist tint) @> (tint * tint)) (fun sample -> calculate_center sample);;
+*)
 
 (* needs work *)
 let calculate_distance (sample1 : sample) (sample2 : sample) : int =
@@ -933,8 +922,21 @@ let calculate_distance (sample1 : sample) (sample2 : sample) : int =
   let dy = abs (snd centerpoint1 - snd centerpoint2) in
   max dx dy
 (*let primitive_calculate_distance = primitive "calculate_distance" (tlist tint) @> (tlist tint) @> tint (fun sample -> get_label sample);;*)
+(* accessor alias *)
+let get_ymin (samp : sample) : int = List.nth samp 1
+let get_ymax (samp : sample) : int = List.nth samp 3
 
-
+(*Test To Include Solution program *)
+(* Check whether a list of bounding boxes contains one of label 2 above one of label 4 *)
+let contains_2_above_4 (boxes : sample list) : bool =
+  List.exists (fun b2 ->
+    get_label b2 = 2 &&
+    List.exists (fun b4 ->
+      get_label b4 = 4 &&
+      get_ymax b2 < get_ymin b4
+    ) boxes
+  ) boxes
+let primitive_contains_2_above_4 = primitive "contains_2_above_4" (tlist (tlist tint)@> tboolean)(fun boxes -> contains_2_above_4 boxes);; 
 (*END TODO*)
 
 
