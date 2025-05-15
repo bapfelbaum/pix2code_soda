@@ -937,6 +937,23 @@ let contains_2_above_4 (boxes : sample list) : bool =
     ) boxes
   ) boxes
 let primitive_contains_2_above_4 = primitive "contains_2_above_4" (tlist (tlist tint)@> tboolean)(fun boxes -> contains_2_above_4 boxes);; 
+(* sign right of vehicle*)
+let contains_6_ro_5 (samples : int list list) : bool =
+  List.exists (fun box6 ->
+    List.nth box6 4 = 6 &&  
+    List.exists (fun box5 ->
+      List.nth box5 4 = 5 &&
+      List.nth box6 0 > List.nth box5 2
+    ) samples
+  ) samples
+let primitive_contains_6_ro_5 = primitive "contains_6_ro_5" (tlist (tlist tint)@> tboolean) (fun samples -> contains_6_ro_5 samples);;
+(*test*)
+let is_above (a : int list) (b : int list) : bool =
+  let ymax_a = List.nth a 3 in
+  let ymin_b = List.nth b 1 in
+  ymax_a < ymin_b
+let primitive_is_above = primitive "is_above" ((tlist int)@>(tlist int)@>tboolean) (fun a b -> is_above a b);;
+
 (*END TODO*)
 
 
