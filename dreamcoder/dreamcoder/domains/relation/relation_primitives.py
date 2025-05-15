@@ -194,6 +194,16 @@ def _contains_2_above_4(samples):
 
     return False
 
+def _contains_6_ro_5(samples):
+    for box6 in samples:
+        if box6[4] == 6:
+            for box5 in samples:
+                if box5[4] == 5 and box6[0] > box5[2]:
+                    return True
+    return False
+def _is_above(a,b):
+    return a[3]<b[1]
+
 def get_primitives():
     primitives = [
         # Primitive("slice", arrow(tint, tint, tlist(t0), tlist(t0)), _slice),
@@ -376,33 +386,35 @@ def get_soda_primitives():
         Primitive("or", arrow(tbool, tbool, tbool), _or),
         Primitive("eq?", arrow(tint, tint, tbool), _eq),
         Primitive("gt?", arrow(tint, tint, tbool), _gt),
-        Primitive("find", arrow(t0, tlist(t0), tint), _find),
-        Primitive("max", arrow(tint, tint, tint), _max),
-        Primitive("min", arrow(tint, tint, tint), _min),
+        #Primitive("find", arrow(t0, tlist(t0), tint), _find),
+        #Primitive("max", arrow(tint, tint, tint), _max),
+        #Primitive("min", arrow(tint, tint, tint), _min),
         Primitive("map", arrow(arrow(t0, t1), tlist(t0), tlist(t1)), _map),
         # Primitive("range", arrow(tint, tlist(tint)), _range),
         Primitive("index", arrow(tint, tlist(t0), t0), _index),
-        Primitive("fold", arrow(tlist(t0), t1, arrow(t0, t1, t1), t1), _fold),
-        Primitive("length", arrow(tlist(t0), tint), len),
-        Primitive("if", arrow(tbool, t0, t0, t0), _if),
+        #Primitive("fold", arrow(tlist(t0), t1, arrow(t0, t1, t1), t1), _fold),
+        #Primitive("length", arrow(tlist(t0), tint), len),
+        #Primitive("if", arrow(tbool, t0, t0, t0), _if),
         Primitive("+", arrow(tint, tint, tint), _addition),
         Primitive("-", arrow(tint, tint, tint), _subtraction),
-        Primitive("empty", tlist(t0), []),
-        Primitive("cons", arrow(t0, tlist(t0), tlist(t0)), _cons),
-        Primitive("car", arrow(tlist(t0), t0), _car),
-        Primitive("cdr", arrow(tlist(t0), tlist(t0)), _cdr),
+        #Primitive("empty", tlist(t0), []),
+        #Primitive("cons", arrow(t0, tlist(t0), tlist(t0)), _cons),
+        #Primitive("car", arrow(tlist(t0), t0), _car),
+        #Primitive("cdr", arrow(tlist(t0), tlist(t0)), _cdr),
         Primitive("empty?", arrow(tlist(t0), tbool), _isEmpty),
         Primitive("forall", arrow(arrow(t0, tbool), tlist(t0), tbool), _forall),
         Primitive("exists", arrow(arrow(t0, tbool), tlist(t0), tbool), _exists),
-        Primitive("count", arrow(tlist(t0), t0, tint), _count),
+        #Primitive("count", arrow(tlist(t0), t0, tint), _count),
         #restrict new functions to int
-        Primitive("get_bbox", arrow(tlist(tint), tlist(tint)), _get_bbox),
+        #Primitive("get_bbox", arrow(tlist(tint), tlist(tint)), _get_bbox),
         Primitive("filter_samples_by_label", arrow(tlist(tlist(tint)), tint, tlist(tlist(tint))), _filter_samples_by_label),
         Primitive("filter_by_predicate", arrow(arrow(tlist(tint), tbool),(tlist (tlist (tint))), tlist(tlist(tint))), _filter_by_predicate),
         #Primitive("calculate_center", arrow(tlist(tint), (tint * tint)), _calculate_center),
         Primitive("get_label", arrow(tlist(tint),tint), _get_label),
         #Check whether DC can use handcrafted solution
-        Primitive("contains_2_above_4", arrow(tlist(tlist(tint)), tbool),_contains_2_above_4)
+        Primitive("contains_2_above_4", arrow(tlist(tlist(tint)), tbool),_contains_2_above_4),
+        Primitive("contains_6_ro_5", arrow(tlist(tlist(tint)), tbool),_contains_6_ro_5),
+        Primitive("is_above", arrow(tlist(tint),tlist(tint), tbool), _is_above)
     ]
 
     # base primitives
